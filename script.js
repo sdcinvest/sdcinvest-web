@@ -1,40 +1,57 @@
 // ===== Header background on scroll =====
 const header = document.getElementById('header');
-const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 40);
-onScroll();
-window.addEventListener('scroll', onScroll, { passive: true });
+if (header && !header.classList.contains('scrolled')) {
+  const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 40);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+}
 
 // ===== Mobile navigation =====
 const navToggle = document.getElementById('nav-toggle');
 const nav = document.querySelector('.nav');
 const navList = document.getElementById('nav-list');
 
-const closeNav = () => {
-  nav.classList.remove('open');
-  navToggle.classList.remove('open');
-  navToggle.setAttribute('aria-expanded', 'false');
-};
+if (navToggle && nav && navList) {
+  const closeNav = () => {
+    nav.classList.remove('open');
+    navToggle.classList.remove('open');
+    navToggle.setAttribute('aria-expanded', 'false');
+  };
 
-navToggle.addEventListener('click', () => {
-  const open = nav.classList.toggle('open');
-  navToggle.classList.toggle('open', open);
-  navToggle.setAttribute('aria-expanded', String(open));
-});
-navList.addEventListener('click', (e) => {
-  if (e.target.tagName === 'A') closeNav();
+  navToggle.addEventListener('click', () => {
+    const open = nav.classList.toggle('open');
+    navToggle.classList.toggle('open', open);
+    navToggle.setAttribute('aria-expanded', String(open));
+  });
+  navList.addEventListener('click', (e) => {
+    if (e.target.tagName === 'A') closeNav();
+  });
+}
+
+// ===== Anti-spam e-mail (decoded only in the browser) =====
+document.querySelectorAll('.email-link').forEach((el) => {
+  const encoded = el.dataset.email;
+  if (!encoded) return;
+  let addr = '';
+  try { addr = atob(encoded); } catch (e) { return; }
+  el.textContent = addr;
+  el.setAttribute('href', 'mailto:' + addr);
+  el.removeAttribute('data-email');
 });
 
 // ===== Reveal on scroll =====
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('in');
-      revealObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-
-document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+const reveals = document.querySelectorAll('.reveal');
+if (reveals.length) {
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach((el) => revealObserver.observe(el));
+}
 
 // ===== Animated counters =====
 const animateCount = (el) => {
@@ -51,50 +68,55 @@ const animateCount = (el) => {
   requestAnimationFrame(step);
 };
 
-const statObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      animateCount(entry.target);
-      statObserver.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.5 });
-
-document.querySelectorAll('.stat-num').forEach((el) => statObserver.observe(el));
+const stats = document.querySelectorAll('.stat-num');
+if (stats.length) {
+  const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        animateCount(entry.target);
+        statObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+  stats.forEach((el) => statObserver.observe(el));
+}
 
 // ===== Contact form (front-end validation + simulated submit) =====
 const form = document.getElementById('contact-form');
 const feedback = document.getElementById('form-feedback');
 
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  feedback.className = 'form-feedback';
+if (form && feedback) {
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    feedback.className = 'form-feedback';
 
-  const name = form.name.value.trim();
-  const email = form.email.value.trim();
-  const message = form.message.value.trim();
-  const consent = form.consent.checked;
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    const message = form.message.value.trim();
+    const consent = form.consent.checked;
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  if (!name || !emailOk || !message || !consent) {
-    feedback.textContent = 'Merci de compléter les champs requis et d’accepter le traitement de vos données.';
-    feedback.classList.add('error');
-    return;
-  }
+    if (!name || !emailOk || !message || !consent) {
+      feedback.textContent = 'Merci de compléter les champs requis et d’accepter le traitement de vos données.';
+      feedback.classList.add('error');
+      return;
+    }
 
-  const btn = form.querySelector('button[type="submit"]');
-  btn.disabled = true;
-  btn.textContent = 'Envoi en cours…';
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Envoi en cours…';
 
-  // Simulation d'envoi — à remplacer par un appel à votre backend / service e-mail.
-  setTimeout(() => {
-    form.reset();
-    btn.disabled = false;
-    btn.textContent = 'Envoyer ma demande';
-    feedback.textContent = 'Merci ' + name.split(' ')[0] + ', votre demande a bien été envoyée. Nous vous répondons sous 48 h.';
-    feedback.classList.add('success');
-  }, 900);
-});
+    // Simulation d'envoi — à remplacer par un appel à votre backend / service e-mail.
+    setTimeout(() => {
+      form.reset();
+      btn.disabled = false;
+      btn.textContent = 'Envoyer ma demande';
+      feedback.textContent = 'Merci ' + name.split(' ')[0] + ', votre demande a bien été envoyée. Nous vous répondons sous 48 h.';
+      feedback.classList.add('success');
+    }, 900);
+  });
+}
 
 // ===== Footer year =====
-document.getElementById('year').textContent = new Date().getFullYear();
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
